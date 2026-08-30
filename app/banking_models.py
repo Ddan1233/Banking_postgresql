@@ -60,6 +60,49 @@ class ProductHoldingModel(BaseModel):
         return self
 
 
+class CustomerDataModel(BaseModel):
+    """Personal and segmentation data supplied by the customer master sheet."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    date_of_birth: date
+    region: NonEmptyText
+    address: NonEmptyText
+    sex: NonEmptyText
+    customer_type_level_1: NonEmptyText
+    customer_type_level_2: NonEmptyText | None = None
+
+
+class LiquidityRecordModel(BaseModel):
+    """A balance observation from the liquidity sheet."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    reference_date: date
+    balance: Money
+
+
+class InvestmentTransactionModel(BaseModel):
+    """An investment operation from the investments sheet."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    operation_date: date
+    product: NonEmptyText
+    channel: NonEmptyText | None = None
+    amount: Money
+
+
+class RegionalContextModel(BaseModel):
+    """Socio-demographic context associated with a customer's region."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    region: NonEmptyText
+    squared_kilometers: Money
+    delinquency_rate: Money
+
+
 class CustomerProfileModel(BaseModel):
     """The validated output returned by ``get_customer_profile`` in the ETL layer."""
 
@@ -71,6 +114,10 @@ class CustomerProfileModel(BaseModel):
     transactions: list[TransactionModel] = Field(default_factory=list)
     default_history: list[DefaultRecordModel] = Field(default_factory=list)
     products: list[ProductHoldingModel] = Field(default_factory=list)
+    customer_data: CustomerDataModel | None = None
+    liquidity_history: list[LiquidityRecordModel] = Field(default_factory=list)
+    investments: list[InvestmentTransactionModel] = Field(default_factory=list)
+    regional_context: RegionalContextModel | None = None
 
     @model_validator(mode="after")
     def total_must_match_transactions(self) -> "CustomerProfileModel":

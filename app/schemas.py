@@ -1,6 +1,6 @@
 """HTTP request and response schemas."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt, StrictStr
 
 from app.agents.generator import GeneratedScenario
 from app.agents.refiner import RefinementAlternative
@@ -38,7 +38,7 @@ class RefinementRequest(BaseModel):
     airspace_constraints: AirspaceConstraints | None = None
 
 
-class RiskReportRequest(BaseModel):
-    """Request for a banking risk report; profile validation happens at the boundary."""
+class CustomerRiskReportRequest(BaseModel):
+    """Request a report for a workbook customer; the server builds the profile."""
 
-    profile: CustomerProfileModel
+    customer_id: StrictInt | StrictStr

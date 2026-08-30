@@ -21,6 +21,7 @@ class ValidatorAgent:
     """Validate recommendations using deterministic, auditable banking rules."""
 
     _CREDIT_WORDS = ("credit", "loan", "overdraft", "mortgage", "card")
+    _DEFAULT_STATUS_CODES = {20, 40}
 
     def validate(
         self, profile: CustomerProfileModel, report: RiskReport
@@ -49,7 +50,10 @@ class ValidatorAgent:
     @staticmethod
     def _has_default_history(profile: CustomerProfileModel) -> bool:
         return any(
-            (isinstance(record.status, int) and record.status > 0)
+            (
+                isinstance(record.status, int)
+                and record.status in ValidatorAgent._DEFAULT_STATUS_CODES
+            )
             or (isinstance(record.status, str) and "default" in record.status.lower())
             or "default" in (record.status_description or "").lower()
             for record in profile.default_history

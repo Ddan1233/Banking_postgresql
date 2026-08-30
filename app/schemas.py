@@ -6,6 +6,7 @@ from app.agents.generator import GeneratedScenario
 from app.agents.refiner import RefinementAlternative
 from app.agents.validator import ValidationResult
 from app.models import AirspaceConstraints, FlightPlan, WeatherData
+from app.banking_models import CustomerProfileModel
 
 
 class ScenarioRequest(BaseModel):
@@ -35,3 +36,9 @@ class RefinementRequest(BaseModel):
     scenario: GeneratedScenario
     flight_plan: FlightPlan | None = None
     airspace_constraints: AirspaceConstraints | None = None
+
+
+class RiskReportRequest(BaseModel):
+    """Request for a banking risk report; profile validation happens at the boundary."""
+
+    profile: CustomerProfileModel

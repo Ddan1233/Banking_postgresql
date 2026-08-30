@@ -9,6 +9,7 @@ from app.api.routes import router as scenario_router
 from app.core.config import settings
 from app.models import AirspaceConstraints, FlightPlan, WeatherData
 from app.schemas import GenerationResult, RefinementRequest
+from app.banking_orchestrator import BankingRiskOrchestrator
 
 
 class ScenarioOrchestrator:
@@ -136,6 +137,7 @@ def create_app() -> FastAPI:
         description="Prototype AI Agentic for Air Traffic Control scenario generation.",
     )
     application.state.scenario_orchestrator = ScenarioOrchestrator()
+    application.state.banking_risk_orchestrator = BankingRiskOrchestrator()
     application.include_router(scenario_router)
     return application
 

@@ -87,3 +87,24 @@ def test_generator_local_fallback_receives_the_validated_profile() -> None:
     assert report.customer_id == "C-2001"
     assert report.risk_level == "high"
     assert all(item.category != "credit" for item in report.product_recommendations)
+
+
+def test_bonis_status_code_does_not_block_credit_recommendations() -> None:
+    profile = CustomerProfileModel(
+        customer_id="C-2001",
+        current_balance=100.0,
+        total_transaction_amount=0.0,
+        transactions=[],
+        default_history=[
+            {
+                "reference_date": date(2025, 1, 31),
+                "status": 10,
+                "status_description": "bonis",
+            }
+        ],
+        products=[],
+    )
+
+    result = ValidatorAgent().validate(profile, invalid_credit_report())
+
+    assert result.is_valid is True

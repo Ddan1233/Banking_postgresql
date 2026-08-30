@@ -34,8 +34,10 @@ class RiskReport(BaseModel):
     customer_id: str
     risk_level: RiskLevel
     risk_summary: str = Field(min_length=1)
-    key_risk_factors: list[str] = Field(default_factory=list)
-    product_recommendations: list[ProductRecommendation] = Field(default_factory=list)
+    # OpenAI Structured Outputs requires every schema property to be required.
+    # The generator always supplies these fields, including when they are empty.
+    key_risk_factors: list[str]
+    product_recommendations: list[ProductRecommendation]
 
 
 class GeneratorAgent:
@@ -84,7 +86,7 @@ class GeneratorAgent:
     @staticmethod
     def _generate_locally(profile: CustomerProfileModel) -> RiskReport:
         has_default = any(
-            (isinstance(item.status, int) and item.status > 0)
+            (isinstance(item.status, int) and item.status in {20, 40})
             or "default" in (item.status_description or "").lower()
             or (isinstance(item.status, str) and "default" in item.status.lower())
             for item in profile.default_history

@@ -6,6 +6,8 @@ from app.agents.refiner import RefinementResult
 from app.agents.validator import ValidationResult
 from app.agents.generator import GeneratedScenario
 from app.schemas import GenerationResult, RefinementRequest, ScenarioRequest
+from app.banking_orchestrator import RiskReportResult
+from app.schemas import RiskReportRequest
 
 router = APIRouter(tags=["scenarios"])
 
@@ -43,3 +45,16 @@ def refine_scenario(payload: RefinementRequest, request: Request) -> RefinementR
     """Refine a supplied scenario using validator feedback, then validate it."""
 
     return request.app.state.scenario_orchestrator.refine_scenario(payload)
+
+
+@router.post(
+    "/generate-risk-report",
+    response_model=RiskReportResult,
+    status_code=status.HTTP_200_OK,
+)
+def generate_risk_report(payload: RiskReportRequest, request: Request) -> RiskReportResult:
+    """Generate, validate, and if necessary refine a banking risk report."""
+
+    return request.app.state.banking_risk_orchestrator.create_risk_report(
+        payload.profile
+    )

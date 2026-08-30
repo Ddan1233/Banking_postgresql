@@ -2,6 +2,25 @@
 
 FastAPI skeleton for an AI-assisted Air Traffic Control scenario generator.
 
+## Etapa 3: motorul multi-agent bancar
+
+`app/banking_orchestrator.py` oferă `BankingRiskOrchestrator`, care primește
+un `CustomerProfileModel` deja validat de Pydantic și execută secvența
+`GeneratorAgent → ValidatorAgent → RefinerAgent`. Generatorul și refinerul
+folosesc OpenAI Responses API cu Structured Outputs când este definită
+`OPENAI_API_KEY`; în lipsa cheii, folosesc un fallback determinist pentru teste
+și dezvoltare locală. Validatorul este intenționat determinist și auditabil:
+dacă profilul include default în istoric, orice recomandare de credit este
+respinsă cu `is_valid: false` și o listă de erori. Orchestratorul retrimite
+draftul către refiner de cel mult două ori, apoi returnează raportul, statutul
+validării și numărul de rafinări.
+
+`POST /generate-risk-report` primește:
+
+```json
+{"profile": {"customer_id": "C-2001", "current_balance": 100.0, "total_transaction_amount": 0.0, "transactions": [], "default_history": [], "products": []}}
+```
+
 ## Generator agent
 
 `GeneratorAgent` in `app/agents/generator.py` accepts a `FlightPlan` and

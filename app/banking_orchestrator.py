@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from time import perf_counter
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.banking_agents import (
@@ -22,6 +24,10 @@ class RiskReportResult(BaseModel):
     report: RiskReport
     validation: ValidationResult
     refinement_count: int = Field(ge=0)
+    generation_duration_ms: float = Field(default=0.0, ge=0)
+    validation_duration_ms: float = Field(default=0.0, ge=0)
+    refinement_duration_ms: float = Field(default=0.0, ge=0)
+    observability: dict[str, object] | None = None
 
 
 class BankingRiskOrchestrator:
@@ -44,15 +50,28 @@ class BankingRiskOrchestrator:
     def create_risk_report(self, profile: CustomerProfileModel) -> RiskReportResult:
         """Generate a draft and refine it until valid or the limit is reached."""
 
+        generation_start = perf_counter()
         report = self._generator.generate(profile)
+        generation_duration_ms = (perf_counter() - generation_start) * 1000
+
+        validation_start = perf_counter()
         validation = self._validator.validate(profile, report)
+        validation_duration_ms = (perf_counter() - validation_start) * 1000
+        refinement_duration_ms = 0.0
         refinement_count = 0
         while not validation.is_valid and refinement_count < self._max_refinements:
+            refinement_start = perf_counter()
             report = self._refiner.refine(profile, report, validation)
+            refinement_duration_ms += (perf_counter() - refinement_start) * 1000
             refinement_count += 1
+            validation_start = perf_counter()
             validation = self._validator.validate(profile, report)
+            validation_duration_ms += (perf_counter() - validation_start) * 1000
         return RiskReportResult(
             report=report,
             validation=validation,
             refinement_count=refinement_count,
+            generation_duration_ms=generation_duration_ms,
+            validation_duration_ms=validation_duration_ms,
+            refinement_duration_ms=refinement_duration_ms,
         )

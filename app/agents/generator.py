@@ -1,5 +1,3 @@
-"""LLM-backed generation of validated air-traffic disruption scenarios."""
-
 from __future__ import annotations
 
 import json
@@ -17,7 +15,7 @@ Severity = Literal["low", "medium", "high"]
 
 
 class Disruption(BaseModel):
-    """An operational event that requires an air-traffic-control response."""
+    """An operational event that requires response."""
 
     model_config = ConfigDict(extra="forbid")
 

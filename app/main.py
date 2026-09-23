@@ -19,9 +19,12 @@ def create_app() -> FastAPI:
     )
     application.state.banking_risk_orchestrator = BankingRiskOrchestrator()
     application.state.customer_repository = ExcelCustomerRepository(settings.excel_workbook_path)
-    application.state.banking_storage = (
+    banking_storage = (
         BankingStorage(settings.database_url) if settings.database_url else None
     )
+    application.state.banking_storage = banking_storage
+    if banking_storage is not None:
+        banking_storage.initialize()
     application.state.openai_model = settings.openai_model
     application.include_router(banking_router)
     return application
